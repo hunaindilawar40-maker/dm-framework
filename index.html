@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DM Framework</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --card: #111111;
+    --border: #1f1f1f;
+    --accent: #C8F135;
+    --accent2: #7B61FF;
+    --text: #f0f0f0;
+    --muted: #666;
+    --input-bg: #161616;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 60px;
+  }
+
+  .top-tag {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.1s forwards;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 6vw, 44px);
+    font-weight: 800;
+    line-height: 1.1;
+    text-align: center;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.2s forwards;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .sub {
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 36px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.3s forwards;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 24px;
+    width: 100%;
+    max-width: 520px;
+    opacity: 0;
+    animation: fadeUp 0.5s 0.4s forwards;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  .field-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  input, textarea, select {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 11px 14px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    resize: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  select option { background: #1a1a1a; }
+
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .toggle-label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .toggle-label span {
+    display: block;
+    font-size: 11px;
+    color: #444;
+    margin-top: 2px;
+  }
+
+  .toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  .toggle input { opacity: 0; width: 0; height: 0; }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: #222;
+    border-radius: 99px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .slider::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    background: #555;
+    border-radius: 50%;
+    top: 3px; left: 3px;
+    transition: 0.2s;
+  }
+
+  .toggle input:checked + .slider { background: var(--accent); }
+  .toggle input:checked + .slider::after { transform: translateX(18px); background: #000; }
+
+  .btn-generate {
+    width: 100%;
+    padding: 14px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+
+  .btn-generate:hover { opacity: 0.88; transform: scale(0.99); }
+  .btn-generate:active { transform: scale(0.97); }
+
+  .output-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
+    max-width: 520px;
+    margin-top: 20px;
+    display: none;
+    opacity: 0;
+    animation: fadeUp 0.4s forwards;
+  }
+
+  .output-card.visible { display: block; }
+
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .output-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .copy-btn {
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--muted);
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  /* Instagram bubble */
+  .ig-wrap {
+    background: #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    position: relative;
+  }
+
+  .ig-bubble-outer {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .ig-bubble {
+    background: linear-gradient(135deg, #833ab4, #c13584, #e1306c, #fd1d1d);
+    border-radius: 18px 18px 4px 18px;
+    padding: 12px 16px;
+    max-width: 82%;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #fff;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .highlight {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 0 3px;
+    font-style: italic;
+  }
+
+  .tips-strip {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .tip {
+    font-size: 11px;
+    background: #161616;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    color: var(--muted);
+  }
+
+  .tip strong { color: var(--text); }
+
+  .loading {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--muted);
+    font-size: 13px;
+    display: none;
+  }
+
+  .dot-anim::after {
+    content: '';
+    animation: dots 1.2s steps(3, end) infinite;
+  }
+
+  @keyframes dots {
+    0%   { content: ''; }
+    33%  { content: '.'; }
+    66%  { content: '..'; }
+    100% { content: '...'; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .char-count {
+    text-align: right;
+    font-size: 11px;
+    margin-top: 6px;
+    color: var(--muted);
+  }
+
+  .char-count.over { color: #ff5e5e; }
+</style>
+</head>
+<body>
+
+<div class="top-tag">Instagram DM</div>
+<h1>70% Response Rate<br><span>DM Framework</span></h1>
+<p class="sub">Fill in your details — get a cold DM that actually converts.</p>
+
+<div class="card">
+  <div class="section-label">Their Info</div>
+  <div class="field-row">
+    <div class="field">
+      <label>Their name</label>
+      <input id="name" type="text" placeholder="e.g. Alex">
+    </div>
+    <div class="field">
+      <label>Recent update / activity you noticed</label>
+      <input id="update" type="text" placeholder="e.g. post about scaling their team">
+    </div>
+    <div class="field">
+      <label>Their company or profile context</label>
+      <input id="company" type="text" placeholder="e.g. SaaS startup, 50-person team">
+    </div>
+    <div class="field">
+      <label>Their role / growth stage</label>
+      <select id="role">
+        <option value="">Select one…</option>
+        <option>Founder / CEO</option>
+        <option>Creator / Influencer</option>
+        <option>Business owner (SMB)</option>
+        <option>Head of Marketing</option>
+        <option>Freelancer / Solopreneur</option>
+        <option>Other</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section-label">Your Offer</div>
+  <div class="field-row">
+    <div class="field">
+      <label>What outcome do you deliver? (one line)</label>
+      <input id="outcome" type="text" placeholder="e.g. 3x their inbound leads">
+    </div>
+    <div class="field">
+      <label>Your method / approach</label>
+      <input id="method" type="text" placeholder="e.g. short-form video + DM automation">
+    </div>
+    <div class="field">
+      <label>Timeline</label>
+      <input id="timeline" type="text" placeholder="e.g. in 30 days">
+    </div>
+  </div>
+
+  <div class="toggle-row">
+    <div class="toggle-label">
+      Include guarantee
+      <span>Optional but always recommended</span>
+    </div>
+    <label class="toggle">
+      <input type="checkbox" id="guaranteeToggle" checked>
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="field" id="guaranteeField" style="margin-bottom:20px;">
+    <label>Your guarantee</label>
+    <input id="guarantee" type="text" placeholder="e.g. or you don't pay">
+  </div>
+
+  <button class="btn-generate" onclick="generate()">Generate My DM →</button>
+</div>
+
+<div class="loading" id="loading"><span class="dot-anim">Crafting your DM</span></div>
+
+<div class="output-card" id="outputCard">
+  <div class="output-header">
+    <div class="output-label">Your DM — ready to send</div>
+    <button class="copy-btn" id="copyBtn" onclick="copyDM()">Copy</button>
+  </div>
+  <div class="ig-wrap">
+    <div class="ig-bubble-outer">
+      <div class="ig-bubble" id="dmOutput"></div>
+    </div>
+  </div>
+  <div class="char-count" id="charCount"></div>
+  <div class="tips-strip">
+    <div class="tip"><strong>Tip:</strong> Send Mon–Thu, 9–11am for best open rates</div>
+    <div class="tip"><strong>Tip:</strong> Don't follow up before 48h</div>
+    <div class="tip"><strong>Tip:</strong> Voice note as follow-up = +23% reply rate</div>
+  </div>
+</div>
+
+<script>
+const toggle = document.getElementById('guaranteeToggle');
+const guaranteeField = document.getElementById('guaranteeField');
+
+toggle.addEventListener('change', () => {
+  guaranteeField.style.display = toggle.checked ? 'flex' : 'none';
+});
+
+let rawDM = '';
+
+async function generate() {
+  const name = document.getElementById('name').value.trim() || '[Name]';
+  const update = document.getElementById('update').value.trim() || '[their recent update]';
+  const company = document.getElementById('company').value.trim() || '[their company/profile]';
+  const role = document.getElementById('role').value || 'founders';
+  const outcome = document.getElementById('outcome').value.trim() || '[your outcome]';
+  const method = document.getElementById('method').value.trim() || '[your method]';
+  const timeline = document.getElementById('timeline').value.trim() || '[timeline]';
+  const includeGuarantee = toggle.checked;
+  const guarantee = document.getElementById('guarantee').value.trim();
+
+  const guaranteeLine = includeGuarantee && guarantee
+    ? `Guarantee: "${guarantee}"`
+    : includeGuarantee
+    ? '(include a compelling guarantee)'
+    : '(no guarantee)';
+
+  const prompt = `You are a world-class cold DM copywriter for Instagram. Write a short, conversational Instagram DM using this 3-step framework. It must feel HUMAN and not salesy. Max 150 words.
+
+Framework:
+1. Personal hook referencing their recent activity
+2. Specific insight for someone at their stage
+3. Your offer + soft CTA (open-ended, low friction question)
+
+Details:
+- Their name: ${name}
+- Recent activity you noticed: ${update}
+- Company/profile context: ${company}
+- Their role: ${role}
+- Your outcome: ${outcome}
+- Your method: ${method}
+- Timeline: ${timeline}
+- ${guaranteeLine}
+
+Rules:
+- Sound like a real person, not a bot
+- No generic openers ("Hope you're doing well")
+- No more than 4 short paragraphs
+- End with a single open-ended easy question
+- Do NOT use emojis excessively (max 1–2 if natural)
+- Output ONLY the DM text, nothing else`;
+
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('outputCard').classList.remove('visible');
+
+  try {
+    const res = await fetch('/.netlify/functions/generate-dm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 1000,
+        messages: [{ role: 'system', content: 'You are a world-class cold DM copywriter.' }, { role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await res.json();
+    rawDM = data.dm?.trim() || 'Could not generate. Try again.';
+
+    document.getElementById('dmOutput').textContent = rawDM;
+
+    const len = rawDM.length;
+    const cc = document.getElementById('charCount');
+    cc.textContent = `${len} characters — ${len <= 150 ? '✓ fits Instagram DM preview' : '⚠ consider trimming for best open rates'}`;
+    cc.className = 'char-count' + (len > 300 ? ' over' : '');
+
+  } catch (e) {
+    rawDM = 'Something went wrong. Please try again.';
+    document.getElementById('dmOutput').textContent = rawDM;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  const card = document.getElementById('outputCard');
+  card.classList.add('visible');
+  card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copyDM() {
+  if (!rawDM) return;
+  const ta = document.createElement('textarea');
+  ta.value = rawDM;
+  ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand('copy');
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  } catch(e) {
+    alert('Copy failed — please select the text manually.');
+  }
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>
